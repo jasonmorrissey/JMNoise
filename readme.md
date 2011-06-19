@@ -30,13 +30,23 @@ and
 
 ... to specify which layer you want to insert the noise.  That said, the category will attempt to figure out the best place to insert the noise. (eg. behind text in buttons).
 
-## What about **drawRect()**s?
+## What about drawRects?
 
-If you prefer to draw your noise layer within a `drawRect()` Core Graphics context for custom controls, you can invoke the following from a `drawRect()` method:
+If you prefer to draw your noise layer manually within a `drawRect()`, you can invoke the `drawCGNoise` method.  For example:
 
-`[self drawCGNoise]`
+    -(void)drawRect()
+    {
+        // draw background
+        ...
+        
+        // draw noise texture
+        [self drawCGNoise];
+        
+        // draw stuff over the noise texture
+        ...
+    }
 
-or
+Similarly, for more control over texture opacity, you can call:
 
 `[self drawCGNoiseWithOpacity:]`
 
