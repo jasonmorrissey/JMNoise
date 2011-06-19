@@ -34,11 +34,11 @@ and
 
 If you prefer to draw your noise layer within a `drawRect()` Core Graphics context for custom controls, you can invoke the following from a `drawRect()` method:
 
-`drawCGNoise`
+`[self drawCGNoise]`
 
-and
+or
 
-`drawCGNoiseWithOpacity:`
+`[self drawCGNoiseWithOpacity:]`
 
 ## Installation
 
