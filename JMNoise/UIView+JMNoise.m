@@ -5,8 +5,9 @@
 #include <stdlib.h>
 
 #define kNoiseTileDimension 100
-#define kNoiseIntensity 100
-#define kNoiseDefaultOpacity 0.5
+#define kNoiseIntensity 80
+#define kNoiseDefaultOpacity 0.15
+#define kNoisePixelWidth 1.
 
 #pragma Mark -
 #pragma Mark - Noise Layer
@@ -38,22 +39,35 @@ static UIImage * JMNoiseImage;
 {
     if (!JMNoiseImage)
     {
+        CGFloat imageScale;
+        
+        if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)])
+        {
+            imageScale = [[UIScreen mainScreen] scale];
+        }
+        else 
+        {
+            imageScale = 1;
+        }
+
+        NSUInteger imageDimension = imageScale * kNoiseTileDimension;
+
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-        CGContextRef context = CGBitmapContextCreate(nil,kNoiseTileDimension,kNoiseTileDimension,8,0,
+        CGContextRef context = CGBitmapContextCreate(nil,imageDimension,imageDimension,8,0,
                                                      colorSpace,kCGImageAlphaPremultipliedLast);
         CFRelease(colorSpace);
 
-        for (int i=0; i<(kNoiseTileDimension * kNoiseIntensity); i++)
+        for (int i=0; i<(imageDimension * kNoiseIntensity); i++)
         {
-            int x = arc4random() % kNoiseTileDimension;
-            int y = arc4random() % kNoiseTileDimension;
+            int x = arc4random() % imageDimension;
+            int y = arc4random() % imageDimension;
             int opacity = arc4random() % 100;
-            [NoiseLayer drawPixelInContext:context point:CGPointMake(x, y) width:0.5 opacity:(opacity / 100.)]; 
+            [NoiseLayer drawPixelInContext:context point:CGPointMake(x, y) width:(kNoisePixelWidth * imageScale) opacity:(opacity / 100.)];
         }
 
         CGImageRef imageRef = CGBitmapContextCreateImage(context);
         CGContextRelease(context);
-        JMNoiseImage = [[UIImage alloc] initWithCGImage:imageRef];
+        JMNoiseImage = [[UIImage alloc] initWithCGImage:imageRef scale:imageScale orientation:UIImageOrientationUp];
     }
     return JMNoiseImage;
 }
