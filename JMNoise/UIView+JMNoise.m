@@ -8,8 +8,12 @@
 #define kNoiseIntensity 100
 #define kNoiseDefaultOpacity 0.5
 
+#pragma Mark -
+#pragma Mark - Noise Layer
+
 @interface NoiseLayer : CALayer
-- (UIImage *) noiseTileImage;
++ (UIImage *)noiseTileImage;
++ (void)drawPixelInContext:(CGContextRef)context point:(CGPoint)point width:(CGFloat)width opacity:(CGFloat)opacity;
 @end
 
 @implementation NoiseLayer
@@ -22,7 +26,7 @@ static UIImage * JMNoiseImage;
     [self setNeedsDisplay];
 }
 
-- (void)drawPixelInContext:(CGContextRef)context point:(CGPoint)point width:(CGFloat)width opacity:(CGFloat)opacity;
++ (void)drawPixelInContext:(CGContextRef)context point:(CGPoint)point width:(CGFloat)width opacity:(CGFloat)opacity;
 {
     CGColorRef fillColor = [UIColor colorWithWhite:0. alpha:opacity].CGColor;
     CGContextSetFillColor(context, CGColorGetComponents(fillColor));
@@ -30,7 +34,7 @@ static UIImage * JMNoiseImage;
     CGContextFillEllipseInRect(context, pointRect);
 }
 
-- (UIImage *)noiseTileImage;
++ (UIImage *)noiseTileImage;
 {
     if (!JMNoiseImage)
     {
@@ -44,7 +48,7 @@ static UIImage * JMNoiseImage;
             int x = arc4random() % kNoiseTileDimension;
             int y = arc4random() % kNoiseTileDimension;
             int opacity = arc4random() % 100;
-            [self drawPixelInContext:context point:CGPointMake(x, y) width:0.5 opacity:(opacity / 100.)]; 
+            [NoiseLayer drawPixelInContext:context point:CGPointMake(x, y) width:0.5 opacity:(opacity / 100.)]; 
         }
 
         CGImageRef imageRef = CGBitmapContextCreateImage(context);
@@ -57,14 +61,21 @@ static UIImage * JMNoiseImage;
 - (void)drawInContext:(CGContextRef)ctx;
 {
     UIGraphicsPushContext(ctx);
-    [[self noiseTileImage] drawAsPatternInRect:self.bounds];
+    [[NoiseLayer noiseTileImage] drawAsPatternInRect:self.bounds];
     UIGraphicsPopContext();
 }
 
 @end
 
+#pragma Mark -
+#pragma Mark - UIView implementations
 
 @implementation UIView (JMNoise)
+
+- (void)applyNoise;
+{
+    [self applyNoiseWithOpacity:kNoiseDefaultOpacity];
+}
 
 - (void)applyNoiseWithOpacity:(CGFloat)opacity atLayerIndex:(NSUInteger) layerIndex;
 {
@@ -80,9 +91,22 @@ static UIImage * JMNoiseImage;
     [self applyNoiseWithOpacity:opacity atLayerIndex:0];
 }
 
-- (void)applyNoise;
+- (void)drawCGNoise;
 {
-    [self applyNoiseWithOpacity:kNoiseDefaultOpacity];
+    [self drawCGNoiseWithOpacity:kNoiseDefaultOpacity];
+}
+
+- (void)drawCGNoiseWithOpacity:(CGFloat)opacity;
+{
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSaveGState(context);    
+    UIBezierPath * path = [UIBezierPath bezierPathWithRect:self.bounds];
+    CGContextAddPath(context, [path CGPath]);
+    CGContextClip(context);
+    CGContextSetBlendMode(context, kCGBlendModeMultiply);
+    CGContextSetAlpha(context, opacity);
+    [[NoiseLayer noiseTileImage] drawAsPatternInRect:self.bounds];
+    CGContextRestoreGState(context);
 }
 
 @end

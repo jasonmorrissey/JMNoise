@@ -30,6 +30,16 @@ and
 
 ... to specify which layer you want to insert the noise.  That said, the category will attempt to figure out the best place to insert the noise. (eg. behind text in buttons).
 
+## What about **drawRect()**s?
+
+If you prefer to draw your noise layer within a `drawRect()` Core Graphics context for custom controls, you can invoke the following from a `drawRect()` method:
+
+`drawCGNoise`
+
+and
+
+`drawCGNoiseWithOpacity:`
+
 ## Installation
 
 All you need to do is import `UIView+JMNoise.h` and make sure that you have the **QuartzCore** framework linked to your target.
