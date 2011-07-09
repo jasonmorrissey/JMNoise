@@ -4,17 +4,19 @@
 #import "UIView+JMNoise.h"
 #include <stdlib.h>
 
-#define kNoiseTileDimension 100
-#define kNoiseIntensity 80
-#define kNoiseDefaultOpacity 0.15
-#define kNoisePixelWidth 1.
+#define kNoiseTileDimension 40
+#define kNoiseIntensity 250
+#define kNoiseDefaultOpacity 0.4
+#define kNoisePixelWidth 0.3
+
+#define JM_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
 #pragma Mark -
 #pragma Mark - Noise Layer
 
 @interface NoiseLayer : CALayer
 + (UIImage *)noiseTileImage;
-+ (void)drawPixelInContext:(CGContextRef)context point:(CGPoint)point width:(CGFloat)width opacity:(CGFloat)opacity;
++ (void)drawPixelInContext:(CGContextRef)context point:(CGPoint)point width:(CGFloat)width opacity:(CGFloat)opacity whiteLevel:(CGFloat)whiteLevel;
 @end
 
 @implementation NoiseLayer
@@ -27,9 +29,9 @@ static UIImage * JMNoiseImage;
     [self setNeedsDisplay];
 }
 
-+ (void)drawPixelInContext:(CGContextRef)context point:(CGPoint)point width:(CGFloat)width opacity:(CGFloat)opacity;
++ (void)drawPixelInContext:(CGContextRef)context point:(CGPoint)point width:(CGFloat)width opacity:(CGFloat)opacity whiteLevel:(CGFloat)whiteLevel;
 {
-    CGColorRef fillColor = [UIColor colorWithWhite:0. alpha:opacity].CGColor;
+    CGColorRef fillColor = [UIColor colorWithWhite:whiteLevel alpha:opacity].CGColor;
     CGContextSetFillColor(context, CGColorGetComponents(fillColor));
     CGRect pointRect = CGRectMake(point.x - (width/2), point.y - (width/2), width, width);
     CGContextFillEllipseInRect(context, pointRect);
@@ -57,17 +59,25 @@ static UIImage * JMNoiseImage;
                                                      colorSpace,kCGImageAlphaPremultipliedLast);
         CFRelease(colorSpace);
 
-        for (int i=0; i<(imageDimension * kNoiseIntensity); i++)
+        for (int i=0; i<(kNoiseTileDimension * kNoiseIntensity); i++)
         {
-            int x = arc4random() % imageDimension;
-            int y = arc4random() % imageDimension;
+            int x = arc4random() % (imageDimension + 1);
+            int y = arc4random() % (imageDimension + 1);
             int opacity = arc4random() % 100;
-            [NoiseLayer drawPixelInContext:context point:CGPointMake(x, y) width:(kNoisePixelWidth * imageScale) opacity:(opacity / 100.)];
+            CGFloat whiteLevel = arc4random() % 100;
+            [NoiseLayer drawPixelInContext:context point:CGPointMake(x, y) width:(kNoisePixelWidth * imageScale) opacity:(opacity) whiteLevel:(whiteLevel / 100.)];
         }
 
         CGImageRef imageRef = CGBitmapContextCreateImage(context);
         CGContextRelease(context);
-        JMNoiseImage = [[UIImage alloc] initWithCGImage:imageRef scale:imageScale orientation:UIImageOrientationUp];
+        if (JM_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"4.0"))
+        {
+            JMNoiseImage = [[UIImage alloc] initWithCGImage:imageRef scale:imageScale orientation:UIImageOrientationUp];
+        }
+        else
+        {
+            JMNoiseImage = [[UIImage alloc] initWithCGImage:imageRef];
+        }
     }
     return JMNoiseImage;
 }
@@ -112,15 +122,20 @@ static UIImage * JMNoiseImage;
 
 - (void)drawCGNoiseWithOpacity:(CGFloat)opacity;
 {
+    [self drawCGNoiseWithOpacity:opacity blendMode:kCGBlendModeNormal];
+}
+
+- (void)drawCGNoiseWithOpacity:(CGFloat)opacity blendMode:(CGBlendMode)blendMode;
+{
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSaveGState(context);    
     UIBezierPath * path = [UIBezierPath bezierPathWithRect:self.bounds];
     CGContextAddPath(context, [path CGPath]);
     CGContextClip(context);
-    CGContextSetBlendMode(context, kCGBlendModeMultiply);
+    CGContextSetBlendMode(context, blendMode);
     CGContextSetAlpha(context, opacity);
     [[NoiseLayer noiseTileImage] drawAsPatternInRect:self.bounds];
-    CGContextRestoreGState(context);
+    CGContextRestoreGState(context);    
 }
 
 @end

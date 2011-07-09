@@ -12,6 +12,7 @@
 {
     [super loadView];
     self.view.backgroundColor = [UIColor blackColor];
+    [self.view applyNoise];
 
     // Create a view/button/label/control as usual
     UIButton * button = [UIButton buttonWithType:UIButtonTypeRoundedRect];

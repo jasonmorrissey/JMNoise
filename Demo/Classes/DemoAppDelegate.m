@@ -17,7 +17,7 @@
     self.navigationController = [[[UINavigationController alloc] initWithRootViewController:demoViewController] autorelease];
     [self.navigationController setNavigationBarHidden:YES];
     
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     [self.window addSubview:self.navigationController.view];
     [self.window makeKeyAndVisible];
     

@@ -12,5 +12,6 @@
 // Can be invoked from a drawRect() method
 - (void)drawCGNoise;
 - (void)drawCGNoiseWithOpacity:(CGFloat)opacity;
+- (void)drawCGNoiseWithOpacity:(CGFloat)opacity blendMode:(CGBlendMode)blendMode;
 
 @end
