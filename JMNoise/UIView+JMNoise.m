@@ -41,6 +41,7 @@ static UIImage * JMNoiseImage;
 {
     if (!JMNoiseImage)
     {
+        #ifndef __clang_analyzer__
         CGFloat imageScale;
         
         if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)])
@@ -78,6 +79,7 @@ static UIImage * JMNoiseImage;
         {
             JMNoiseImage = [[UIImage alloc] initWithCGImage:imageRef];
         }
+        #endif
     }
     return JMNoiseImage;
 }
