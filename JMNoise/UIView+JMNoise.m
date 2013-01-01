@@ -105,7 +105,11 @@ static UIImage * JMNoiseImage;
 
 - (void)applyNoiseWithOpacity:(CGFloat)opacity atLayerIndex:(NSUInteger) layerIndex;
 {
+#if __has_feature(objc_arc)
+    NoiseLayer * noiseLayer = [[NoiseLayer alloc] init];
+#else
     NoiseLayer * noiseLayer = [[[NoiseLayer alloc] init] autorelease];
+#endif
     [noiseLayer setFrame:self.bounds];
     noiseLayer.masksToBounds = YES;
     noiseLayer.opacity = opacity;
